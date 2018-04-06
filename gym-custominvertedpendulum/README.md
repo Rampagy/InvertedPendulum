@@ -3,7 +3,7 @@
 This is an environment using OpenAI's framework for the the classic inverted pendulum problem.
 
 
-## OpenAI Environment Installation Instructions
+## Installation
 
 To install the environment type the below commands from one directory above the downloaded gym-custominvertedpendulum folder.
 

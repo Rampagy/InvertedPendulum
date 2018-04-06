@@ -31,12 +31,17 @@ class CustomInvertedPendulumEnv(gym.Env):
         # Angle limit set to 2 * theta_threshold_radians so failing observation is still within bounds
         high = np.array([
             self.x_threshold * 2,
+            np.finfo(np.float32).max])
+
+        # Scoring angle limit set to 2 * theta_threshold_radians
+        lim = np.array([
+            self.x_threshold * 2,
             np.finfo(np.float32).max,
             self.theta_threshold_radians * 2,
             np.finfo(np.float32).max])
 
         self.action_space = spaces.Discrete(2)
-        self.observation_space = spaces.Box(-high, high)
+        self.observation_space = spaces.Box(-lim, lim)
 
         self.seed()
         self.viewer = None
@@ -64,15 +69,17 @@ class CustomInvertedPendulumEnv(gym.Env):
         theta_dot = theta_dot + self.tau * thetaacc
         self.state = (x,x_dot,theta,theta_dot)
         done =  x < -self.x_threshold \
-                or x > self.x_threshold \
-                or theta < -self.theta_threshold_radians \
-                or theta > self.theta_threshold_radians
+                or x > self.x_threshold
         done = bool(done)
 
-        if not done:
-            reward = 1.0
+        if not done \
+            and theta < self.theta_threshold_radians \
+            and theta > -self.theta_threshold_radians:
+                reward = 1.0
+        elif not done:
+            reward = 0.0
         elif self.steps_beyond_done is None:
-            # Pole just fell!
+            # Time ran out!
             self.steps_beyond_done = 0
             reward = 1.0
         else:
@@ -85,6 +92,8 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
+        # start pole at bottom
+        self.state[2:] += 3.14
         self.steps_beyond_done = None
         return np.array(self.state)
 
