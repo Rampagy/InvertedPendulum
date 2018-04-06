@@ -1,0 +1,1 @@
+from gym_custominvertedpendulum.envs.custominvertedpendulum_env import CustomInvertedPendulumEnv
