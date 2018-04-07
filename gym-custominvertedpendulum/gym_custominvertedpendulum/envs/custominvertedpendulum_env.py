@@ -65,7 +65,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         xacc  = temp - self.polemass_length * thetaacc * costheta / self.total_mass
         x  = x + self.tau * x_dot
         x_dot = x_dot + self.tau * xacc
-        theta = theta + self.tau * theta_dot
+        theta = angle_normalize(theta + self.tau * theta_dot)
         theta_dot = theta_dot + self.tau * thetaacc
         self.state = (x,x_dot,theta,theta_dot)
         done =  x < -self.x_threshold \
@@ -92,8 +92,8 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
-        # start pole at bottom
-        self.state[2:] += 3.14
+        # start pole at bottom (180 degrees or pi radians)
+        self.state[2] = angle_normalize(self.state[2] + np.pi)
         self.steps_beyond_done = None
         return np.array(self.state)
 
@@ -145,3 +145,7 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def close(self):
         if self.viewer: self.viewer.close()
+
+
+def angle_normalize(x):
+    return (((x+np.pi) % (2*np.pi)) - np.pi)
