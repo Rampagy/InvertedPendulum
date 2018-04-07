@@ -30,7 +30,9 @@ while (inverted_pend_eval_score <= 200):
         # practive flipping the pole up
         env_name = 'CustomInvertedPendulum-v0'
         # slowly demand that the inverted pendulum hold it longer and longer
-        trained_threshold = 5 + int(count/2)
+        trained_threshold = 5 + count
+        if trained_threshold > 600:
+            trainted_threshold = 600
 
     env = gym.make(env_name)
 
