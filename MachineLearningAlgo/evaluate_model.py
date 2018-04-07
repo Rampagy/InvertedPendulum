@@ -3,12 +3,12 @@ import NeuralNetwork as nn
 import numpy as np
 
 
-def EvalModel(model, env, eval_episodes, render_episodes, history_len, obs_len):
+def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
     cumulative_reward = 0
 
     for i in range(eval_episodes):
         done = False
-        obs_img = np.zeros((history_len, obs_len))
+        obs_img = np.zeros((1, obs_len))
 
         observation = env.reset()
 
@@ -19,9 +19,9 @@ def EvalModel(model, env, eval_episodes, render_episodes, history_len, obs_len):
 
             obs_img = np.roll(obs_img, 1, axis=0)
             obs_img[0, :] = observation
-            reshaped = obs_img.reshape((1, history_len*obs_len))
+            reshaped = obs_img.reshape((1, obs_len))
 
-            action = model.predict_move(reshaped, train=False)
+            action = model.predict_move(reshaped, train=True)
 
             # if the model is not initialized, take a random action instead
             if action == None:

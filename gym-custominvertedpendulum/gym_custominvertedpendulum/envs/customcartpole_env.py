@@ -1,14 +1,10 @@
-"""
-Classic inverted pendulum system
-"""
-
 import math
 import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 
-class CustomInvertedPendulumEnv(gym.Env):
+class CustomCartPoleEnv(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second' : 50
@@ -28,19 +24,15 @@ class CustomInvertedPendulumEnv(gym.Env):
         self.theta_threshold_radians = 15 * 2 * math.pi / 360
         self.x_threshold = 2.4
 
+        # Angle limit set to 2 * theta_threshold_radians so failing observation is still within bounds
         high = np.array([
-            self.x_threshold * 2,
-            np.finfo(np.float32).max])
-
-        # Scoring angle limit set to 2 * theta_threshold_radians
-        lim = np.array([
             self.x_threshold * 2,
             np.finfo(np.float32).max,
             self.theta_threshold_radians * 2,
             np.finfo(np.float32).max])
 
         self.action_space = spaces.Discrete(2)
-        self.observation_space = spaces.Box(-lim, lim)
+        self.observation_space = spaces.Box(-high, high)
 
         self.seed()
         self.viewer = None
@@ -64,22 +56,21 @@ class CustomInvertedPendulumEnv(gym.Env):
         xacc  = temp - self.polemass_length * thetaacc * costheta / self.total_mass
         x  = x + self.tau * x_dot
         x_dot = x_dot + self.tau * xacc
-        theta = angle_normalize(theta + self.tau * theta_dot)
+        theta = theta + self.tau * theta_dot
         theta_dot = theta_dot + self.tau * thetaacc
         self.state = (x,x_dot,theta,theta_dot)
         done =  x < -self.x_threshold \
-                or x > self.x_threshold
+                or x > self.x_threshold \
+                or theta < -self.theta_threshold_radians \
+                or theta > self.theta_threshold_radians
         done = bool(done)
 
-        if not done \
-            and theta < self.theta_threshold_radians \
-            and theta > -self.theta_threshold_radians:
-                reward = 1.0
-        elif not done:
-            reward = 0.0
+        if not done:
+            reward = 1.0
         elif self.steps_beyond_done is None:
+            # Pole just fell!
             self.steps_beyond_done = 0
-            reward = 0.0
+            reward = 1.0
         else:
             if self.steps_beyond_done == 0:
                 logger.warn("You are calling 'step()' even though this environment has already returned done = True. You should always call 'reset()' once you receive 'done = True' -- any further steps are undefined behavior.")
@@ -89,9 +80,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         return np.array(self.state), reward, done, {}
 
     def reset(self):
-        self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
-        # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(self.state[2] + np.pi)
+        self.state = self.np_random.uniform(low=-0.1, high=0.1, size=(4,))
         self.steps_beyond_done = None
         return np.array(self.state)
 
@@ -143,7 +132,3 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def close(self):
         if self.viewer: self.viewer.close()
-
-
-def angle_normalize(x):
-    return (((x+np.pi) % (2*np.pi)) - np.pi)
