@@ -4,6 +4,7 @@ import numpy as np
 
 '''
 env                     # environment
+model                   # tensorflow/tflearn model
 vid_dir                 # place to save video
 enable_video            # if video should be captured
 trained_threshold       # reward threshold at which it stops training
@@ -11,16 +12,18 @@ train_episodes          # number of episodes before training
 eval_episodes           # number of episode when evaluating
 render_episodes         # number of episodes to render when evaluating
 obs_len                 # length of the observations
+save_inter              # number of intervals between saves
 '''
 
-def train_model(model, env, obs_len, vid_dir='Video', enable_video=False,
+def train_model(model, env, vid_dir='Video', enable_video=False,
         trained_threshold=400, train_episodes=200, eval_episodes=15,
-        render_episodes=1):
+        render_episodes=1, save_inter=15):
 
     if enable_video:
         env = gym.wrappers.Monitor(env, directory=vid_dir, force=False, resume=True)
 
     train_count = 0
+    obs_len = len(env.observation_space.low)
     eval_score = em.EvalModel(model, env, eval_episodes, render_episodes, obs_len)
 
     # train to until above the threshold
@@ -67,6 +70,10 @@ def train_model(model, env, obs_len, vid_dir='Video', enable_video=False,
         # train the dnn
         train_count += 1
         model.train_game(max_obs_log, max_action_log)
+
+        # save model every multiple of save_inter
+        if train_count%save_inter == 0:
+            model.save_model()
 
         eval_score = em.EvalModel(model, env, eval_episodes, render_episodes, obs_len)
 
