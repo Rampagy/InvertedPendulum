@@ -60,13 +60,13 @@ class CustomInvertedPendulumDisturbRejectEnv(gym.Env):
         force = self.force_mag if action==1 else -self.force_mag
 
         # Insert random disturbance every 800 steps to the cart
-        if np.random.uniform(0, 1) <= 1/600:
+        if np.random.uniform(0, 1) <= 1/700:
             # let the magnitude of the disturbance be random
-            force += np.random.randint(-75, 75)
+            force += np.random.randint(-25, 25)
 
         pole_disturbance = 0
         # Insert a random disturbance to the pole every 400 steps
-        if np.random.uniform(0, 1) <= 1/400:
+        if np.random.uniform(0, 1) <= 1/500:
             if np.random.randint(0, 1) == 1:
                 # let the magnitude of the force be random in the negative direction
                 pole_disturbance = np.random.randint(-150, -100)
