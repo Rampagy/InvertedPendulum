@@ -62,7 +62,7 @@ class CustomInvertedPendulumDisturbRejectEnv(gym.Env):
         # Insert random disturbance every 800 steps to the cart
         if np.random.uniform(0, 1) <= 1/700:
             # let the magnitude of the disturbance be random
-            force += np.random.randint(-25, 25)
+            force += np.random.randint(-75, 75)
 
         pole_disturbance = 0
         # Insert a random disturbance to the pole every 400 steps

@@ -62,4 +62,4 @@ env_name = 'CustomInvertedPendulum_DisturbReject-v0'
 env = gym.make(env_name)
 
 train_count, eval_score = tm.train_model(env=env, eval_episodes=25,
-    trained_threshold=1200, model=model, train_episodes=50)
+    trained_threshold=1100, model=model, train_episodes=50)
