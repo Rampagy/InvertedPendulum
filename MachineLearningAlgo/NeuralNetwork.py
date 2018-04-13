@@ -36,32 +36,16 @@ class Control_Model():
             self.has_weights = True
 
 
-    def predict_move(self, observations, train=True):
+    def predict_move(self, observations, uniform=True):
         if self.has_weights:
             position_probabilities = self.model.predict(observations)
             position_probabilities = np.squeeze(position_probabilities)
 
-            if not train:
-                return np.argmax(position_probabilities)
+            # if using uniform
+            if uniform:
+                position_probabilities = np.random.multinomial(1, position_probabilities, size=1)
 
-            move = 0
-            prev_prob = 0
-            onehot_count = 0
-
-            # pick a random number between 0 and 1
-            uniform_num = np.random.uniform(0, 1)
-
-            # check to see which 'window' the random number is in
-            for probability in position_probabilities:
-                if ((prev_prob <= uniform_num) and \
-                    (uniform_num <= prev_prob + probability)):
-                        move = onehot_count
-                        break
-
-                prev_prob += probability
-                onehot_count += 1
-
-            return move
+            return np.argmax(position_probabilities)
         else:
             return None
 
@@ -70,7 +54,7 @@ class Control_Model():
         # Train the model
         labels = to_categorical(y=labels, nb_classes=self.out_classes)
         self.model.fit({'input': features}, {'target': labels}, n_epoch=4,
-                  show_metric=False, batch_size=100, run_id='tensorboard_log',
+                  show_metric=False, batch_size=500, run_id='tensorboard_log',
                   shuffle=True)
         self.has_weights = True
 

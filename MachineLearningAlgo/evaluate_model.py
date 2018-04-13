@@ -21,7 +21,7 @@ def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
             obs_img[0, :] = observation
             reshaped = obs_img.reshape((1, obs_len))
 
-            action = model.predict_move(reshaped, train=True)
+            action = model.predict_move(reshaped, uniform=True)
 
             # if the model is not initialized, take a random action instead
             if action == None:
@@ -30,8 +30,6 @@ def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
             # use action to make a move
             observation, reward, done, info = env.step(action)
             cumulative_reward += reward
-
-        print('current average: {} in {} games'.format(cumulative_reward/(i+1), (i+1)))
 
     print('average score: {}'.format(cumulative_reward/eval_episodes))
     return cumulative_reward/eval_episodes

@@ -16,8 +16,8 @@ save_inter              # number of intervals between saves
 '''
 
 def train_model(model, env, vid_dir='Video', enable_video=False,
-        trained_threshold=400, train_episodes=200, eval_episodes=15,
-        render_episodes=1, save_inter=15):
+        trained_threshold=400, train_episodes=100, eval_episodes=15,
+        render_episodes=0, save_inter=15):
 
     if enable_video:
         env = gym.wrappers.Monitor(env, directory=vid_dir, force=False, resume=True)
@@ -30,7 +30,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
     while(eval_score <= trained_threshold):
         max_reward = -np.inf
 
-        # run a segment of 200 'games' and train off of the max score
+        # run a segment of X 'games' and train off of the max score
         for i in range(train_episodes):
             cumulative_reward = 0
             obs_log = []
@@ -64,8 +64,6 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 max_obs_log = obs_log
                 max_action_log = action_log
 
-            print('Episode {} scored {}, max {}'.format(i, cumulative_reward, max_reward))
-
 
         # train the dnn
         train_count += 1
@@ -79,7 +77,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
 
 
-    print('{} training episodes'.format(train_count))
+    #print('{} training episodes'.format(train_count))
     # save the model for evaluation
     model.save_model()
     # Close the envirnment so the video can be written to
