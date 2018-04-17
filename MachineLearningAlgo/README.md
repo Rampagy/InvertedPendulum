@@ -1,3 +1,3 @@
 # Machine Learning Algorithm
 
-This code is reused from [openai_general](https://github.com/Rampagy/openai_general).
+This code is reused primarily reused from [openai_general](https://github.com/Rampagy/openai_general).

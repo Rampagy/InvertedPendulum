@@ -41,10 +41,14 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
             observation = env.reset()
 
             while not done:
+                # add observation to the obs list
                 obs_img = np.roll(obs_img, 1, axis=0)
                 obs_img[0, :] = observation
+
+                # reshape observation list to feed into the model
                 reshaped = obs_img.reshape((1, obs_len))
 
+                # feed observation list into the model
                 action = model.predict_move(reshaped)
 
                 # if the model is not initialized, take a random action instead
@@ -63,7 +67,6 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 max_reward = cumulative_reward
                 max_obs_log = obs_log
                 max_action_log = action_log
-
 
         # train the dnn
         train_count += 1
