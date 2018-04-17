@@ -4,7 +4,7 @@ This sandbox stemmed from my frustrations of the cpu/gpu only being at ~20% (or 
 
 ## Issue
 
-I am having difficulty getting tflearn/tensorflow to run in multiple processes.  Up to this point I have tried passing the tf computational graph into the processes as a copy (regular input), through a queue and as a global, all to no avail.  The current issue is the processes hang when trying to [predict the action](run_episodes#L24).  I have tried seemingly everything, including adding locks, and namespaces.
+I am having difficulty getting tflearn/tensorflow to run in multiple processes.  Up to this point I have tried passing the tf computational graph into the processes as a copy (regular input), through a queue and as a global, all to no avail.  The current issue is the processes hang when trying to [predict the action](run_episodes.py#L24).  I have tried seemingly everything, including adding locks, and namespaces.
 
 If you know how to use a tensorflow model in several processes to utilize all computing power at hand let me know.  I would be extremely interested in seeing how you did it.
 
