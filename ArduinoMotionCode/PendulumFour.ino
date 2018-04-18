@@ -1,7 +1,6 @@
 //**************************************
 //*   AI Pendulum Control Platform Interface
 //*   4/6/2018
-//*   Cunningham
 //***************************************
 
 #include <avr/io.h>
@@ -29,7 +28,7 @@ struct MovementParms
   bool Direction;
 };
 
-//Create instance of three structures 
+//Create instance of three structures
 volatile struct MovementParms DesiredCart;
 volatile struct MovementParms CurrentCart;
 volatile struct MovementParms Encoder;
@@ -44,13 +43,13 @@ bool echo = 0;
 
 
 //**************************************
-//  Interrupt used to generate the servo 
+//  Interrupt used to generate the servo
 //  pulses
 //  The lower the address the higher is the priority level
-//  Vector Address 12 
+//  Vector Address 12
 //**************************************
-ISR(TIMER1_COMPA_vect)  
-{   
+ISR(TIMER1_COMPA_vect)
+{
    if(StepSpeed < 64000)
    {
      //Check the direction pin and determine the position
@@ -64,26 +63,26 @@ ISR(TIMER1_COMPA_vect)
        digitalWrite(Dir,0);
        CurrentCart.Position--;
      }
-  
+
      //Step once
      digitalWrite(Step,1);
      digitalWrite(Step,0);
    }
    //Interrupt occurs when timer matches this value
    //Larger velocity means smaller OCR1A value
-   //StepSpeed is calculated using another function and then stored 
+   //StepSpeed is calculated using another function and then stored
    //in a global variable to be accessed by the interrupt routine
    OCR1A = StepSpeed;
 }
 
 //**************************************
 //  10 ms Task Rate
-//  Creates a periodic Task 
+//  Creates a periodic Task
 //  Vector Address 15
 //**************************************
 ISR(TIMER0_COMPA_vect)
 {
-  //Check to see if the flag was not cleared, this will track 
+  //Check to see if the flag was not cleared, this will track
   //overruns in the 10ms task
   if(RunTask_10ms)
   {
@@ -94,11 +93,11 @@ ISR(TIMER0_COMPA_vect)
 
 //*******************************************
 //  ISR routine for the Encoder Channel
-//  
-//  Routine creates and interrupt on the 
-//  rising edge of pin 2. Then checks to 
-//  see if the if the second channel is 
-//  high or low to determine the direction 
+//
+//  Routine creates and interrupt on the
+//  rising edge of pin 2. Then checks to
+//  see if the if the second channel is
+//  high or low to determine the direction
 //
 // Vector Address 2
 //******************************************
@@ -121,15 +120,15 @@ void Encoder_ISR()
   {
     Encoder.Position = 300;
   }
-  
+
 }
 //*******************************************
 // WriteStepSize
 //
 // Pass in a velocity and update the step size
 // global variable which is read by the interrupt
-// to generate the stepper pulses. Speed is in 
-// the units mm/min. 
+// to generate the stepper pulses. Speed is in
+// the units mm/min.
 //*******************************************
 void WriteStepSize(signed int Speed)
 {
@@ -141,7 +140,7 @@ void WriteStepSize(signed int Speed)
   else
   {
      CurrentCart.Direction = 0;
-  } 
+  }
   // Conversion Factor
   //  20000 mm      1 min      360 deg     1 rev       step          16,000 step
   // ----------- x -------- x -------- x -------- x ------------ =  ---------
@@ -153,7 +152,7 @@ void WriteStepSize(signed int Speed)
   //  16,000,000/16,000   = 1,000 clock cycles  (20000 mm/min)
   //  16,000,000/8,000    = 2,000 clock cycles  (10000 mm/min)
   //  16,000,000/800      = 20,000 clock cycles (1000 mm/min)
-  
+
   //For some reason the prescale set to zero causes problems, so 8 is the minimum
   //which means the clock is 16,000,000/8=2,000,000
   //  2,000,000/16,000   = 125 clock cycles  (20000 mm/min)
@@ -192,7 +191,7 @@ void SetupTimer1()
   TCCR1B |= (1<<WGM12); // enable the CTC mode
   TCCR1B |= (1<<CS11); // 1/8 Prescale, 0 prescale was not working
 
-  TIMSK1 |= (1<<OCIE1A); 
+  TIMSK1 |= (1<<OCIE1A);
 }
 
 //*********************************************
@@ -208,8 +207,8 @@ void SetupTimer0()
   // turn on CTC mode
   TCCR0A |= (1 << WGM01);
   // 1024 prescaler - page 142 of datasheet
-  TCCR0B |= (1 << CS00); 
-  TCCR0B |= (1 << CS02);  
+  TCCR0B |= (1 << CS00);
+  TCCR0B |= (1 << CS02);
   // enable timer compare interrupt
   TIMSK0 |= (1 << OCIE0A);
 }
@@ -219,7 +218,7 @@ void SetupTimer0()
 //
 //
 //*****************************************
-void setup() 
+void setup()
 {
   bool run_program = 0;
   //Set the pin modes
@@ -231,7 +230,7 @@ void setup()
   //Turn on the onboard LED
   pinMode(LED_BUILTIN,OUTPUT);
   digitalWrite(LED_BUILTIN,1);
-  
+
   //Wait for the switch input to start things off
   while(true)
   {
@@ -244,7 +243,7 @@ void setup()
   }
   //Attach an interrupt INT.0 (priority 2) to the Encoder pin to trigger on rising edge
   attachInterrupt(digitalPinToInterrupt(EncoderChannel_A), Encoder_ISR, RISING);
- 
+
   //Disable interrupts
   cli();
   //Setup Timers
@@ -259,9 +258,9 @@ void setup()
 //********************************************
 //  Main Loop
 //********************************************
-void loop() 
+void loop()
 {
- 
+
   if(RunTask_10ms)
   {
     //P Controller
@@ -273,7 +272,7 @@ void loop()
     {
        DesiredCart.Velocity = (Encoder.Position)* 125;
     }
-    
+
     if(DesiredCart.Velocity > 10000)
     {
        DesiredCart.Velocity = 10000;
@@ -283,11 +282,11 @@ void loop()
        DesiredCart.Velocity = -10000;
     }
     DesiredCart.Acceleration = 1000;
-    
+
     //Call this function to compute the current velocity,this
     //takes into account the acceleration
     MotionCalculation();
-  
+
     //Call function to covert the velocity from mm/min to timer value
 
     WriteStepSize(CurrentCart.Velocity);
@@ -310,7 +309,7 @@ void loop()
     Serial.print(",");
     Serial.println("");
 
-    
+
     echo = Serial.read();
     //Clear the flag that gets set by the interrupt
     //This was added at end to detect overruns of the 10ms task
@@ -324,10 +323,10 @@ void loop()
 // Uses all global structures
 //*********************************************
 void MotionCalculation(void)
-{  
+{
   //Moving in the positive direction
   if(CurrentCart.Velocity >= 0)
-  
+
      //Determine if we are speeding up
      if(CurrentCart.Velocity < DesiredCart.Velocity)
      {
@@ -341,7 +340,7 @@ void MotionCalculation(void)
            CurrentCart.Velocity = DesiredCart.Velocity;
         }
      }
-     //We are slowing down 
+     //We are slowing down
      else
      {
         //Check for overshoot
@@ -354,7 +353,7 @@ void MotionCalculation(void)
            CurrentCart.Velocity = DesiredCart.Velocity;
         }
      }
-  //Moving in the negative direction, all the signs flip   
+  //Moving in the negative direction, all the signs flip
   else
   {
      //Determine if we are speeding up
@@ -370,7 +369,7 @@ void MotionCalculation(void)
            CurrentCart.Velocity = DesiredCart.Velocity;
         }
      }
-     //We are slowing down 
+     //We are slowing down
      else
      {
         //Calculate the timer for the next pulse
@@ -385,4 +384,3 @@ void MotionCalculation(void)
      }
   }
 }
-
