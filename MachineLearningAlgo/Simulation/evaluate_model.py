@@ -1,5 +1,5 @@
 import gym
-import NeuralNetwork as nn
+#import NeuralNetwork as nn
 import numpy as np
 
 

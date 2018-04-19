@@ -1,4 +1,4 @@
-import NeuralNetwork as nn
+#import ../NeuralNetwork as nn
 import evaluate_model as em
 import numpy as np
 

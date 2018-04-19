@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../Shared")
+
 import train_model as tm
 import NeuralNetwork as nn
 import gym_custominvertedpendulum as gym
