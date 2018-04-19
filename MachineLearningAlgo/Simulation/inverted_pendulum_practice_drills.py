@@ -54,7 +54,7 @@ env_name = 'CustomInvertedPendulum-v0'
 env = gym.make(env_name)
 
 train_count, eval_score = tm.train_model(env=env, eval_episodes=25,
-    trained_threshold=500, model=model)
+    trained_threshold=400, model=model)
 
 # Phase 3
 # Train until the model reaches a score of 1500 while random external forces
