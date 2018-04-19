@@ -16,17 +16,17 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def __init__(self):
         self.gravity = 9.8
-        self.masscart = 1.0
-        self.masspole = 0.1
+        self.masscart = 0.236
+        self.masspole = 0.032
         self.total_mass = (self.masspole + self.masscart)
-        self.length = 0.5 # actually half the pole's length
+        self.length = 0.362/2 # actually half the pole's length
         self.polemass_length = (self.masspole * self.length)
         self.force_mag = 10.0
         self.tau = 0.02  # seconds between state updates
 
         # Angle at which to fail the episode
         self.theta_threshold_radians = 15 * 2 * math.pi / 360
-        self.x_threshold = 2.4
+        self.x_threshold = 1.42/2 - 0.065/2 # half the rail length minus half the width of the cart
 
         high = np.array([
             self.x_threshold * 2,
