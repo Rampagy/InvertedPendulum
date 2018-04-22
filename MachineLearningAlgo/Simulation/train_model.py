@@ -51,10 +51,6 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 # feed observation list into the model
                 action = model.predict_move(reshaped)
 
-                # if the model is not initialized, take a random action instead
-                if action == None:
-                    action = env.action_space.sample()
-
                 # keep a log of actions and observations
                 obs_log += [reshaped.flatten()]
                 action_log += [action]

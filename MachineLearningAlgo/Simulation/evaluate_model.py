@@ -23,10 +23,6 @@ def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
 
             action = model.predict_move(reshaped, uniform=True)
 
-            # if the model is not initialized, take a random action instead
-            if action == None:
-                action = env.action_space.sample()
-
             # use action to make a move
             observation, reward, done, info = env.step(action)
             cumulative_reward += reward

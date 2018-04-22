@@ -51,7 +51,7 @@ class Control_Model():
 
             return np.argmax(position_probabilities)
         else:
-            return None
+            return np.random.randint(0, self.out_classes-1)
 
 
     def train_game(self, features, labels):
