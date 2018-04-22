@@ -35,11 +35,11 @@ while (inverted_pend_eval_score <= 100):
         # slowly demand that the inverted pendulum hold it longer and longer
         trained_threshold = 5 + int(count/2) * 5
         if trained_threshold > 100:
-            trainted_threshold = 100
+            trained_threshold = 100
 
     env = gym.make(env_name)
 
-    train_count, eval_score = tm.train_model(env=env,
+    train_count, eval_score = tm.train_model(env=env, train_episodes=200,
         trained_threshold=trained_threshold, model=model)
 
     if env_name == 'CustomInvertedPendulum-v0':
@@ -54,7 +54,7 @@ env_name = 'CustomInvertedPendulum-v0'
 env = gym.make(env_name)
 
 train_count, eval_score = tm.train_model(env=env, eval_episodes=25,
-    trained_threshold=400, model=model)
+    trained_threshold=400, model=model, train_episodes=200)
 
 # Phase 3
 # Train until the model reaches a score of 1500 while random external forces
@@ -65,4 +65,4 @@ env_name = 'CustomInvertedPendulum_DisturbReject-v0'
 env = gym.make(env_name)
 
 train_count, eval_score = tm.train_model(env=env, eval_episodes=25,
-    trained_threshold=700, model=model, train_episodes=50)
+    trained_threshold=700, model=model, train_episodes=200)
