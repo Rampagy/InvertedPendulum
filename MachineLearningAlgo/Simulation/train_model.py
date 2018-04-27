@@ -23,8 +23,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
         env = gym.wrappers.Monitor(env, directory=vid_dir, force=False, resume=True)
 
     train_count = 0
-    obs_len = len(env.observation_space.low)
-    eval_score = em.EvalModel(model, env, eval_episodes, render_episodes, obs_len)
+    eval_score = em.EvalModel(model, env, eval_episodes, render_episodes)
 
     # train to until above the threshold
     while(eval_score <= trained_threshold):
@@ -36,32 +35,26 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
             obs_log = []
             action_log = []
             done = False
-            obs_img = np.zeros((1, obs_len))
 
-            observation = env.reset()
+            observation = np.asarray(env.reset()).reshape((1, len(env.observation_space.low)))
+
 
             while not done:
-                # add observation to the obs list
-                obs_img = np.roll(obs_img, 1, axis=0)
-                obs_img[0, :] = observation
-
-                # reshape observation list to feed into the model
-                reshaped = obs_img.reshape((1, obs_len))
-
                 # feed observation list into the model
-                action = model.predict_move(reshaped)
+                action = model.predict_move(observation)
 
                 # keep a log of actions and observations
-                obs_log += [reshaped.flatten()]
+                obs_log += [observation]
                 action_log += [action]
 
                 # use action to make a move
                 observation, reward, done, info = env.step(action)
+                observation = np.asarray(observation).reshape((1, len(env.observation_space.low)))
                 cumulative_reward += reward
 
             if cumulative_reward > max_reward:
                 max_reward = cumulative_reward
-                max_obs_log = obs_log
+                max_obs_log = np.squeeze(obs_log)
                 max_action_log = action_log
 
         # train the dnn
@@ -72,7 +65,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
         if train_count%save_inter == 0:
             model.save_model()
 
-        eval_score = em.EvalModel(model, env, eval_episodes, render_episodes, obs_len)
+        eval_score = em.EvalModel(model, env, eval_episodes, render_episodes)
 
 
 

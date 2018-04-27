@@ -1,3 +1,1 @@
 from gym_custominvertedpendulum.envs.custominvertedpendulum_env import CustomInvertedPendulumEnv
-from gym_custominvertedpendulum.envs.customcartpole_env import CustomCartPoleEnv
-from gym_custominvertedpendulum.envs.custominvertedpendulumdisturbreject_env import CustomInvertedPendulumDisturbRejectEnv

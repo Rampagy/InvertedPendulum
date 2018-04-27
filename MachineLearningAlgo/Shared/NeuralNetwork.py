@@ -3,31 +3,26 @@ import tensorflow as tf
 import tflearn
 import os
 from tflearn.layers.core import input_data, dropout, fully_connected, reshape
-from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.estimator import regression
 from tflearn.data_utils import to_categorical
 
 class Control_Model():
-    def __init__(self, input_len, output_len):
+    def __init__(self, input_len):
         # set file paths
         self.save_loc = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Model')
         self.tb_name = 'tensorboard_log'
 
-        # number of outputs from the neural net
-        self.out_classes = output_len
+        # left or right
+        self.out_classes = 2
 
         # Building convolutional network
         network = input_data(shape=[None, input_len], name='input')
-        network = fully_connected(network, 256, activation='relu')
+        network = fully_connected(network, 100, activation='relu')
         network = dropout(network, 0.8)
-        network = fully_connected(network, 256, activation='relu')
+        network = fully_connected(network, 100, activation='relu')
         network = dropout(network, 0.8)
-        network = fully_connected(network, 256, activation='relu')
-        network = dropout(network, 0.8)
-        network = fully_connected(network, 256, activation='relu')
-        network = dropout(network, 0.8)
-        network = fully_connected(network, output_len, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.0002,
+        network = fully_connected(network, self.out_classes, activation='softmax')
+        network = regression(network, optimizer='adam', learning_rate=0.002,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network

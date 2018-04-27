@@ -3,12 +3,11 @@ import gym
 import numpy as np
 
 
-def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
+def EvalModel(model, env, eval_episodes, render_episodes):
     cumulative_reward = 0
 
     for i in range(eval_episodes):
         done = False
-        obs_img = np.zeros((1, obs_len))
 
         observation = env.reset()
 
@@ -17,11 +16,7 @@ def EvalModel(model, env, eval_episodes, render_episodes, obs_len):
                 # render for viewing experience
                 env.render()
 
-            obs_img = np.roll(obs_img, 1, axis=0)
-            obs_img[0, :] = observation
-            reshaped = obs_img.reshape((1, obs_len))
-
-            action = model.predict_move(reshaped, uniform=True)
+            action = model.predict_move(np.asarray(observation).reshape((1, len(env.observation_space.low))))
 
             # use action to make a move
             observation, reward, done, info = env.step(action)

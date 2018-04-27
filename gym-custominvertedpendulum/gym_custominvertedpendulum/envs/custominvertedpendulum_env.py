@@ -19,10 +19,11 @@ class CustomInvertedPendulumEnv(gym.Env):
         self.masscart = 0.236
         self.masspole = 0.032
         self.total_mass = (self.masspole + self.masscart)
-        self.length = 0.362/2 # actually half the pole's length
+        self.length = 0.362
         self.polemass_length = (self.masspole * self.length)
-        self.force_mag = 10.0
+        self.force_mag = 1.0
         self.tau = 0.02  # seconds between state updates
+        self.inertia_pole = (self.masspole * self.length ** 2) / 3
 
         # Angle at which to fail the episode
         self.theta_threshold_radians = 15 * 2 * math.pi / 360
@@ -59,13 +60,15 @@ class CustomInvertedPendulumEnv(gym.Env):
         force = self.force_mag if action==1 else -self.force_mag
         costheta = math.cos(theta)
         sintheta = math.sin(theta)
-        temp = (force + self.polemass_length * theta_dot * theta_dot * sintheta) / self.total_mass
-        thetaacc = (self.gravity * sintheta - costheta* temp) / (self.length * (4.0/3.0 - self.masspole * costheta * costheta / self.total_mass))
-        xacc  = temp - self.polemass_length * thetaacc * costheta / self.total_mass
-        x  = x + self.tau * x_dot
+        xacc  = force / self.total_mass
+        yforce = sintheta*self.masspole*self.gravity
+        xforce = costheta*xacc*self.masspole
+        thetaacc = (self.length/2 * (xforce + yforce)) / self.inertia_pole
         x_dot = x_dot + self.tau * xacc
-        theta = angle_normalize(theta + self.tau * theta_dot)
+        x  = x + self.tau * x_dot
         theta_dot = theta_dot + self.tau * thetaacc
+        theta = angle_normalize(theta + self.tau * theta_dot)
+
         self.state = (x,x_dot,theta,theta_dot)
         done =  x < -self.x_threshold \
                 or x > self.x_threshold
@@ -103,7 +106,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         scale = screen_width/world_width
         carty = 100 # TOP OF CART
         polewidth = 10.0
-        polelen = scale * 1.0
+        polelen = scale * 0.3
         cartwidth = 50.0
         cartheight = 30.0
 
