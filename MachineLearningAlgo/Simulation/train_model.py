@@ -31,15 +31,15 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
         max_reward = -np.inf
         done = False
         train = False
-        max_obs_log = np.empty((1, 4))
+        max_obs_log = np.empty((1, len(env.observation_space.low)))
         max_action_log = np.empty((1, 1))
 
         for i in range(train_episodes):
             observation = np.asarray(env.reset()).reshape((1, len(env.observation_space.low)))
             episode_count += 1
 
-            obs_log = np.empty((1, 4))
-            action_log = np.empty((1, 1))
+            obs_log = np.empty((1, len(env.observation_space.low)), dtype=np.float32)
+            action_log = np.empty((1, 1), dtype=np.int32)
 
             while not done:
                 # feed observation list into the model
@@ -66,7 +66,6 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
         if train:
             # train the dnn
-            print('TRAIN')
             model.train_game(max_obs_log, max_action_log)
 
 

@@ -1,5 +1,7 @@
 """
 Classic inverted pendulum system
+The pole does NOt exert any force onto the cart in the env, because
+the stepper motor will damp that force out.
 """
 
 import math
