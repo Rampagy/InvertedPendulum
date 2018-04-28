@@ -22,7 +22,7 @@ class Control_Model():
         network = fully_connected(network, 100, activation='relu')
         network = dropout(network, 0.8)
         network = fully_connected(network, self.out_classes, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.01,
+        network = regression(network, optimizer='adam', learning_rate=0.001,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network
@@ -52,7 +52,7 @@ class Control_Model():
     def train_game(self, features, labels):
         # Train the model
         labels = to_categorical(y=labels.flatten(), nb_classes=self.out_classes)
-        self.model.fit({'input': features}, {'target': labels}, n_epoch=1,
+        self.model.fit({'input': features}, {'target': labels}, n_epoch=2,
                   show_metric=False, batch_size=500, run_id=self.tb_name,
                   shuffle=True)
         self.has_weights = True
