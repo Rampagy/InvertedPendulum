@@ -21,7 +21,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         self.total_mass = (self.masspole + self.masscart)
         self.length = 0.362
         self.polemass_length = (self.masspole * self.length)
-        self.force_mag = 1.0
+        self.force_mag = 2.0
         self.tau = 0.02  # seconds between state updates
         self.inertia_pole = (self.masspole * self.length ** 2) / 3
 
@@ -61,9 +61,9 @@ class CustomInvertedPendulumEnv(gym.Env):
         costheta = math.cos(theta)
         sintheta = math.sin(theta)
         xacc  = force / self.total_mass
-        yforce = sintheta*self.masspole*self.gravity
-        xforce = costheta*xacc*self.masspole
-        thetaacc = (self.length/2 * (xforce + yforce)) / self.inertia_pole
+        t_gravity = self.length/2 * sintheta * self.masspole * self.gravity # torque due to gravity
+        t_cart = self.length/2 * costheta * xacc * self.masspole # torque due to cart
+        thetaacc = (-t_cart + t_gravity) / self.inertia_pole
         x_dot = x_dot + self.tau * xacc
         x  = x + self.tau * x_dot
         theta_dot = theta_dot + self.tau * thetaacc
@@ -94,7 +94,7 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(self.state[2] + np.pi)
+        self.state[2] = np.random.uniform(low=-np.pi, high=np.pi)
         self.steps_beyond_done = None
         return np.array(self.state)
 
