@@ -16,7 +16,7 @@ save_inter              # number of intervals between saves
 '''
 
 def train_model(model, env, vid_dir='Video', enable_video=False,
-        trained_threshold=400, eval_episodes=15, train_depth=20,
+        trained_threshold=400, eval_episodes=15, train_depth=50,
         render_episodes=0, save_inter=15, train_episodes=100):
 
     if enable_video:
