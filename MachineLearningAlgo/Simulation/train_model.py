@@ -1,4 +1,3 @@
-#import ../NeuralNetwork as nn
 import evaluate_model as em
 import numpy as np
 
@@ -31,13 +30,13 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
         train_obs_log = np.empty((1, len(env.observation_space.low)))
         train_action_log = np.empty((1, 1))
 
-        obs_log = np.empty((1, len(env.observation_space.low)), dtype=np.float32)
-        action_log = np.empty((1, 1), dtype=np.int32)
-        reward_log = np.empty((1, 1), dtype=np.int32)
-
         for i in range(train_episodes):
             done = False
             episode_count += 1
+
+            obs_log = np.empty((1, len(env.observation_space.low)), dtype=np.float32)
+            action_log = np.empty((1, 1), dtype=np.int32)
+            reward_log = np.empty((1, 1), dtype=np.int32)
 
             observation = np.asarray(env.reset()).reshape((1, len(env.observation_space.low)))
 
@@ -56,14 +55,14 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 # keep a log of the reward
                 reward_log = np.append(reward_log, np.asarray(reward).reshape((1, 1)), axis=0)
 
-        # trim out the init value (np.empty) in the logs
-        obs_log = obs_log[1:, :]
-        action_log = action_log[1:, :]
-        reward_log = reward_log[1:, :]
+            # trim out the init value (np.empty) in the logs
+            obs_log = obs_log[1:, :]
+            action_log = action_log[1:, :]
+            reward_log = reward_log[1:, :]
 
-        # compute backprop data
-        train_obs_log, train_action_log = filter_episode(obs_log, action_log, reward_log)
-        model.train_game(train_obs_log, train_action_log)
+            # compute backprop data
+            train_obs_log, train_action_log = filter_episode(obs_log, action_log, reward_log)
+            model.train_game(train_obs_log, train_action_log)
 
         train_count += 1
         # save model every multiple of save_inter
@@ -72,6 +71,13 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
         eval_score = em.EvalModel(model, env, eval_episodes, render_episodes)
 
+        # write to the log file
+        with open("../Model/scores.txt", "a") as myfile:
+            myfile.write(str(eval_score) + '\n')
+
+
+
+
     print('{} training episodes'.format(episode_count))
     # save the model for evaluation
     model.save_model()
@@ -79,6 +85,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
     env.close()
 
     return train_count, eval_score
+
 
 
 def filter_episode(obs_log, action_log, reward_log):
