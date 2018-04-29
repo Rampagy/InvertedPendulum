@@ -126,7 +126,7 @@ def filter_episode(obs_log, action_log, reward_log):
             train_action_log = np.append(train_action_log, act, axis=0)
 
         # if it got a reward for its current position AND
-        # if it did not get rewarded for the next Y moves
+        # if it did not get rewarded for the next 'step_count' moves
         elif (np.average(reward_log[step_count:step_count+noreward_steps]) < forward_noreward_steps_lim) and \
                 (reward_log[step_count] >= 0.5):
 
