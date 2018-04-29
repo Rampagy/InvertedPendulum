@@ -26,7 +26,7 @@ def animate(i):
 
         ax1.clear()
         ax1.plot(xs, ys)
-        plt.xlabel('Evaluation episode, (1 episode = 25 games)')
+        plt.xlabel('Evaluation episode, 1 evaluation every 100 training episodes')
         plt.ylabel('Evaluation score')
         plt.title('Evaluation Timeseries')
     except Exception as e:
