@@ -28,18 +28,18 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
     # train to until above the threshold
     while(eval_score <= trained_threshold):
-        max_reward = -np.inf
-        done = False
-        train = False
-        max_obs_log = np.empty((1, len(env.observation_space.low)))
-        max_action_log = np.empty((1, 1))
+        train_obs_log = np.empty((1, len(env.observation_space.low)))
+        train_action_log = np.empty((1, 1))
+
+        obs_log = np.empty((1, len(env.observation_space.low)), dtype=np.float32)
+        action_log = np.empty((1, 1), dtype=np.int32)
+        reward_log = np.empty((1, 1), dtype=np.int32)
 
         for i in range(train_episodes):
-            observation = np.asarray(env.reset()).reshape((1, len(env.observation_space.low)))
+            done = False
             episode_count += 1
 
-            obs_log = np.empty((1, len(env.observation_space.low)), dtype=np.float32)
-            action_log = np.empty((1, 1), dtype=np.int32)
+            observation = np.asarray(env.reset()).reshape((1, len(env.observation_space.low)))
 
             while not done:
                 # feed observation list into the model
@@ -53,21 +53,17 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 observation, reward, done, info = env.step(action)
                 observation = np.asarray(observation).reshape((1, len(env.observation_space.low)))
 
-                if reward > 0:
-                    # only append as long as the log is or clip at 'train_depth'
-                    lookback = np.minimum(obs_log.shape[0]-1, train_depth)
+                # keep a log of the reward
+                reward_log = np.append(reward_log, np.asarray(reward).reshape((1, 1)), axis=0)
 
-                    # If this move created a reward of +0 (or more) add it and
-                    # the last 'train_depth' moves to the train log.
-                    # This rewards behavior that leads to points AND moves that keep points
-                    max_obs_log = np.append(max_obs_log, obs_log[-lookback:, :], axis=0)
-                    max_action_log = np.append(max_action_log, action_log[-lookback:, :], axis=0)
-                    train = True
+        # trim out the init value (np.empty) in the logs
+        obs_log = obs_log[1:, :]
+        action_log = action_log[1:, :]
+        reward_log = reward_log[1:, :]
 
-        if train:
-            # train the dnn
-            model.train_game(max_obs_log, max_action_log)
-
+        # compute backprop data
+        train_obs_log, train_action_log = filter_episode(obs_log, action_log, reward_log)
+        model.train_game(train_obs_log, train_action_log)
 
         train_count += 1
         # save model every multiple of save_inter
@@ -76,12 +72,56 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
         eval_score = em.EvalModel(model, env, eval_episodes, render_episodes)
 
-
-
     print('{} training episodes'.format(episode_count))
     # save the model for evaluation
     model.save_model()
-    # Close the envirnment so the video can be written to
+    # Close the environment so the video can be written to
     env.close()
 
     return train_count, eval_score
+
+
+def filter_episode(obs_log, action_log, reward_log):
+    step_count = 0
+    forward_steps_lim = 40
+
+    log_len = action_log.shape[0]
+    score_lim = 15 * np.pi/180
+
+    train_obs_log = np.empty((1, obs_log.shape[1]))
+    train_action_log = np.empty((1, 1))
+
+    for act, obs in zip(action_log, obs_log):
+        x, x_dot, theta, theta_dot = obs
+
+        # look forward X steps or until the end of the log
+        lookforward = np.minimum(log_len - (step_count+1), forward_steps_lim)
+
+        obs = np.asarray(obs).reshape(1, obs_log.shape[1])
+
+        # if it got a reward for its current position OR
+        # if the current move results in at least 1 point within the next 35 moves
+        if ((theta > -score_lim) and (theta < score_lim)) or \
+                (np.sum(reward_log[step_count:step_count+lookforward]) >= 0.5):
+
+            # convert action to numpy array
+            act = np.asarray(act).reshape(1, action_log.shape[1])
+
+            train_obs_log = np.append(train_obs_log, obs, axis=0)
+            train_action_log = np.append(train_action_log, act, axis=0)
+
+        # else it was a move we don't want, so discourage it in the future
+        else:
+            # convert opposite of action to numpy array
+            act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
+
+            train_obs_log = np.append(train_obs_log, obs, axis=0)
+            train_action_log = np.append(train_action_log, act, axis=0)
+
+        step_count += 1
+
+    # trim out the init value (np.empty) in the logs
+    train_obs_log = train_obs_log[1:, :]
+    train_action_log = train_action_log[1:, :]
+
+    return train_obs_log, train_action_log

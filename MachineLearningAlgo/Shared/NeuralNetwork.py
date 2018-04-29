@@ -18,11 +18,11 @@ class Control_Model():
         # Building convolutional network
         network = input_data(shape=[None, input_len], name='input')
         network = fully_connected(network, 100, activation='relu')
-        network = dropout(network, 0.8)
+        network = dropout(network, 0.3)
         network = fully_connected(network, 100, activation='relu')
-        network = dropout(network, 0.8)
+        network = dropout(network, 0.3)
         network = fully_connected(network, self.out_classes, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.001,
+        network = regression(network, optimizer='adam', learning_rate=0.0001,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network
