@@ -1,36 +1,31 @@
-import sys
-sys.path.append("../Shared")
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
-import evaluate_model as em
-import NeuralNetwork as nn
-import gym_custominvertedpendulum as gym
-from timeit import default_timer as timer
+def animate(i):
+    try:
+        graph_data = open('../Model/scores.txt', 'r').read()
+        lines = graph_data.split('\n')
+        xs = []
+        ys = []
+        count = 0
 
-start = timer()
+        for line in lines:
+            if len(line) > 1:
+                y = float(line)
+                xs.append(count)
+                ys.append(y)
+                count += 1
 
-# create env to initialize model
-env = gym.make('CustomInvertedPendulum-v0')
-obs_len = len(env.observation_space.low)
+        ax1.clear()
+        ax1.plot(xs, ys)
+        plt.xlabel('Evaluation episode, 1 evaluation every 100 training episodes')
+        plt.ylabel('Evaluation score')
+        plt.title('Evaluation Timeseries')
+    except Exception as e:
+        print(e)
 
-# create model
-model = nn.Control_Model(obs_len)
 
-# show model
-eval_score = em.EvalModel(model, env, 100, 10)
-
-env.close()
-
-'''
-# create env to initialize model
-env = gym.make('CustomInvertedPendulum_DisturbReject-v0')
-obs_len = len(env.observation_space.low)
-act_len = env.action_space.n
-
-# show model
-eval_score = em.EvalModel(model, env, 100, 0, obs_len)
-'''
-
-end = timer()
-print(end - start)
-
-env.close()
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
+ani = animation.FuncAnimation(fig, animate, interval=5000)
+plt.show()
