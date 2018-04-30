@@ -113,7 +113,7 @@ def filter_episode(obs_log, action_log, reward_log):
         if (log_len < max_game_steps) and \
                 (step_count+1 > log_len-early_end_steps_lim):
 
-            # discourage network for letting the pole fall
+            # discourage network for letting the game end early
             act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
 
             train_obs_log = np.append(train_obs_log, obs, axis=0)
