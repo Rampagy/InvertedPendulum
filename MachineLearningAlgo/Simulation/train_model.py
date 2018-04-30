@@ -91,12 +91,12 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
 
 def filter_episode(obs_log, action_log, reward_log):
+    max_game_steps = 750
     step_count = 0
     forward_reward_steps_lim = 40
-    forward_noreward_steps_lim = 5
+    early_end_steps_lim = 15
 
     log_len = action_log.shape[0]
-    score_lim = 15 * np.pi/180
 
     train_obs_log = np.empty((1, obs_log.shape[1]))
     train_action_log = np.empty((1, 1))
@@ -107,16 +107,21 @@ def filter_episode(obs_log, action_log, reward_log):
         # look forward X steps or until the end of the log
         reward_steps = np.minimum(log_len - (step_count+1), forward_reward_steps_lim)
 
-        # look forward Y steps or until the end of the log
-        noreward_steps = np.minimum(log_len - (step_count+1), forward_noreward_steps_lim)
-
         obs = np.asarray(obs).reshape(1, obs_log.shape[1])
 
-        # (if it got a reward for its current position AND
-        # if the next Y moves also got rewarded) OR
-        # if the current move results in a point within the next N moves
-        if (reward_log[step_count] >= 0.5) and \
-                (np.average(reward_log[step_count:step_count+noreward_steps]) >= forward_noreward_steps_lim) or \
+        # if the game ended early discourage the last 'early_end_steps_lim' moves
+        if (log_len < max_game_steps) and \
+                (step_count+1 > log_len-early_end_steps_lim):
+
+            # discourage network for letting the pole fall
+            act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
+
+            train_obs_log = np.append(train_obs_log, obs, axis=0)
+            train_action_log = np.append(train_action_log, act, axis=0)
+
+        # if it got a reward for its current position OR
+        # if the current move results in a point within the next 'reward_steps' steps
+        elif (reward_log[step_count] >= 0.5) or \
                 (np.sum(reward_log[step_count:step_count+reward_steps]) >= 0.5):
 
             # convert action to numpy array
@@ -125,16 +130,6 @@ def filter_episode(obs_log, action_log, reward_log):
             train_obs_log = np.append(train_obs_log, obs, axis=0)
             train_action_log = np.append(train_action_log, act, axis=0)
 
-        # if it got a reward for its current position AND
-        # if it did not get rewarded for the next 'step_count' moves
-        elif (np.average(reward_log[step_count:step_count+noreward_steps]) < forward_noreward_steps_lim) and \
-                (reward_log[step_count] >= 0.5):
-
-            # discourage network for letting the pole fall
-            act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
-
-            train_obs_log = np.append(train_obs_log, obs, axis=0)
-            train_action_log = np.append(train_action_log, act, axis=0)
 
         step_count += 1
 

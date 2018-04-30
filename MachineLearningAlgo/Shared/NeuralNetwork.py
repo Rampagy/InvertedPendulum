@@ -22,7 +22,7 @@ class Control_Model():
         network = fully_connected(network, 100, activation='relu')
         network = dropout(network, 0.3)
         network = fully_connected(network, self.out_classes, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.00001,
+        network = regression(network, optimizer='adam', learning_rate=0.00003,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network
