@@ -2,21 +2,20 @@ import evaluate_model as em
 import numpy as np
 
 '''
-env                     # environment
 model                   # tensorflow/tflearn model
+env                     # environment
 vid_dir                 # place to save video
 enable_video            # if video should be captured
 trained_threshold       # reward threshold at which it stops training
-train_episodes          # number of episodes before training
 eval_episodes           # number of episode when evaluating
+train_depth             # number to episodes to look forward
 render_episodes         # number of episodes to render when evaluating
-obs_len                 # length of the observations
 save_inter              # number of intervals between saves
 '''
 
 def train_model(model, env, vid_dir='Video', enable_video=False,
-        trained_threshold=400, eval_episodes=15, train_depth=50,
-        render_episodes=0, save_inter=15, train_episodes=100):
+        trained_threshold=400, eval_episodes=15, render_episodes=0,
+        save_inter=15, train_episodes=100):
 
     if enable_video:
         env = gym.wrappers.Monitor(env, directory=vid_dir, force=False, resume=True)
@@ -93,7 +92,7 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 def filter_episode(obs_log, action_log, reward_log):
     max_game_steps = 750
     step_count = 0
-    forward_reward_steps_lim = 40
+    forward_reward_steps_lim = 120
     early_end_steps_lim = 15
 
     log_len = action_log.shape[0]
@@ -116,9 +115,6 @@ def filter_episode(obs_log, action_log, reward_log):
             # discourage network for letting the game end early
             act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
 
-            train_obs_log = np.append(train_obs_log, obs, axis=0)
-            train_action_log = np.append(train_action_log, act, axis=0)
-
         # if it got a reward for its current position OR
         # if the current move results in a point within the next 'reward_steps' steps
         elif (reward_log[step_count] >= 0.5) or \
@@ -127,8 +123,14 @@ def filter_episode(obs_log, action_log, reward_log):
             # convert action to numpy array
             act = np.asarray(act).reshape(1, action_log.shape[1])
 
-            train_obs_log = np.append(train_obs_log, obs, axis=0)
-            train_action_log = np.append(train_action_log, act, axis=0)
+        # if there isn't a reward in 120 steps, and the game didn't end early
+        # it's not doing anything producting so discourage it
+        else:
+            # discourage network
+            act = np.asarray(int(not act)).reshape(1, action_log.shape[1])
+
+        train_obs_log = np.append(train_obs_log, obs, axis=0)
+        train_action_log = np.append(train_action_log, act, axis=0)
 
 
         step_count += 1

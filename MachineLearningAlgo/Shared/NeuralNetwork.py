@@ -18,11 +18,13 @@ class Control_Model():
         # Building convolutional network
         network = input_data(shape=[None, input_len], name='input')
         network = fully_connected(network, 100, activation='relu')
-        network = dropout(network, 0.3)
+        network = dropout(network, 0.3) # 0.3 = keep prob
         network = fully_connected(network, 100, activation='relu')
-        network = dropout(network, 0.3)
+        network = dropout(network, 0.3) # 0.3 = keep prob
+        network = fully_connected(network, 100, activation='relu')
+        network = dropout(network, 0.3) # 0.3 = keep prob
         network = fully_connected(network, self.out_classes, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.00003,
+        network = regression(network, optimizer='adam', learning_rate=0.00005,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network
@@ -52,7 +54,7 @@ class Control_Model():
     def train_game(self, features, labels):
         # Train the model
         labels = to_categorical(y=labels.flatten(), nb_classes=self.out_classes)
-        self.model.fit({'input': features}, {'target': labels}, n_epoch=2,
+        self.model.fit({'input': features}, {'target': labels}, n_epoch=4,
                   show_metric=False, batch_size=500, run_id=self.tb_name,
                   shuffle=True)
         self.has_weights = True
