@@ -7,17 +7,22 @@ def animate(i):
         lines = graph_data.split('\n')
         xs = []
         ys = []
+        ya = []
+
         count = 0
+        y_filt = 0
 
         for line in lines:
             if len(line) > 1:
                 y = float(line)
                 xs.append(count)
                 ys.append(y)
+                y_filt = 0.01*y + 0.99*y_filt
+                ya.append(y_filt)
                 count += 1
 
         ax1.clear()
-        ax1.plot(xs, ys)
+        ax1.plot(xs, ys, xs, ya)
         plt.xlabel('Evaluation episode, 1 evaluation every 100 training episodes')
         plt.ylabel('Evaluation score')
         plt.title('Evaluation Timeseries')
