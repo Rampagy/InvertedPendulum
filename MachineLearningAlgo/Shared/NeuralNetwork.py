@@ -24,7 +24,7 @@ class Control_Model():
         network = fully_connected(network, 100, activation='relu')
         network = dropout(network, 0.3) # 0.3 = keep prob
         network = fully_connected(network, self.out_classes, activation='softmax')
-        network = regression(network, optimizer='adam', learning_rate=0.00005,
+        network = regression(network, optimizer='adam', learning_rate=0.0000001,
                              loss='categorical_crossentropy', name='target')
 
         self.comp_graph = network
@@ -60,14 +60,14 @@ class Control_Model():
         self.has_weights = True
 
         # remove all previous tensorboard files
-        folder = os.path.join(self.save_loc, self.tb_name)
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
+        #folder = os.path.join(self.save_loc, self.tb_name)
+        #for the_file in os.listdir(folder):
+        #    file_path = os.path.join(folder, the_file)
+        #    try:
+        #        if os.path.isfile(file_path):
+        #            os.unlink(file_path)
+        #    except Exception as e:
+        #        print(e)
 
 
     def save_model(self):

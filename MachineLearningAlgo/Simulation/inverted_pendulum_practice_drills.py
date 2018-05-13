@@ -12,4 +12,4 @@ env = gym.make('CustomInvertedPendulum-v0')
 model = nn.Control_Model(len(env.observation_space.low))
 
 train_count, eval_score = tm.train_model(env=env, eval_episodes=20,
-    trained_threshold=400, model=model, render_episodes=0)
+    trained_threshold=400, model=model, train_episodes=40, render_episodes=0)

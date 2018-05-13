@@ -11,7 +11,6 @@ eval_episodes           # number of episode when evaluating
 render_episodes         # number of episodes to render when evaluating
 save_inter              # number of intervals between saves
 train_episodes          # number of games to run before training
-eval_iter               # number of train_episodes to 
 '''
 
 def train_model(model, env, vid_dir='Video', enable_video=False,
@@ -30,10 +29,6 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
 
         # train 'eval_iter' before evaulating if it got better
         for _ in range(eval_iter):
-            train_obs_log = np.empty((1, len(env.observation_space.low)))
-            train_action_log = np.empty((1, 1))
-            max_score = -np.inf
-
             for _ in range(train_episodes):
                 done = False
                 episode_count += 1
@@ -64,19 +59,17 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
                 action_log = action_log[1:, :]
                 reward_log = reward_log[1:, :]
 
-                if sum(reward_log) > max_score:
-                    max_score = sum(reward_log)
-                    train_obs_log = obs_log
-                    train_action_log = action_log
+                # extract data for training
+                train_obs_log, train_action_log = extract_trainable_data(obs_log, action_log, reward_log)
 
-            # if there is train data
-            if train_obs_log.shape[0] >= 2:
-                model.train_game(train_obs_log, train_action_log)
+                # if there is train data
+                if train_obs_log.shape[0] >= 2:
+                    model.train_game(train_obs_log, train_action_log)
+                    train_count += 1
 
-            train_count += 1
-            # save model every multiple of save_inter
-            if train_count%save_inter == 0:
-                model.save_model()
+                # save model every multiple of save_inter
+                if train_count%save_inter == 0:
+                    model.save_model()
 
         eval_score = em.EvalModel(model, env, eval_episodes, render_episodes)
 
@@ -88,9 +81,43 @@ def train_model(model, env, vid_dir='Video', enable_video=False,
     print('{} training episodes'.format(episode_count))
     # save the model for evaluation
     model.save_model()
-    # Close the environment so the video can be written to
+    # Close the environment so the video can be written to the disk
     env.close()
 
     return train_count, eval_score
 
 
+
+def extract_trainable_data(obs_log, action_log, reward_log):
+    railwidth = 1.42/2 - 0.065/2 # half the rail length minus half the width of the cart
+
+    train_obs_log = np.empty((1, 4))
+    train_act_log = np.empty((1, 1))
+
+    prev_value = 0
+    prev_act = np.zeros(shape=(1,1))
+    prev_obs = np.zeros(shape=(1,4))
+
+    for obs, act in zip(obs_log, action_log):
+        obs = np.asarray([obs])
+        act = np.asarray([act])
+
+        value = np.cos(obs[0, 2]/2) + 0.5*abs(obs[0, 0])/railwidth
+
+        # if the state got better from its previous action
+        # or it is already in a good state
+        if (value - prev_value > 0.05) or (value > 1):
+            # train off of the previous action and state
+            train_obs_log = np.append(train_obs_log, prev_obs, axis=0)
+            train_act_log = np.append(train_act_log, prev_act, axis=0)
+
+        prev_value = value
+        prev_act = act
+        prev_obs = obs
+
+    if train_obs_log.shape[0] > 1:
+        # trim out init value (np.empty)
+        train_obs_log = train_obs_log[1:, :]
+        train_act_log = train_act_log[1:, :]
+
+    return train_obs_log, train_act_log
