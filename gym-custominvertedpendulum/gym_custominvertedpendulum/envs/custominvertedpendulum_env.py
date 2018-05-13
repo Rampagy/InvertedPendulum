@@ -27,13 +27,9 @@ class CustomInvertedPendulumEnv(gym.Env):
         self.tau = 0.02  # seconds between state updates
         self.inertia_pole = (self.masspole * self.length ** 2) / 3
 
-        # Angle at which to fail the episode
-        self.theta_threshold_radians = 15 * 2 * math.pi / 360
+        # Angle at which normalization occurs
+        self.theta_threshold_radians = 180 * 2 * math.pi / 360
         self.x_threshold = 1.42/2 - 0.065/2 # half the rail length minus half the width of the cart
-
-        high = np.array([
-            self.x_threshold * 2,
-            np.finfo(np.float32).max])
 
         # Scoring angle limit set to 2 * theta_threshold_radians
         lim = np.array([
@@ -76,12 +72,8 @@ class CustomInvertedPendulumEnv(gym.Env):
                 or x > self.x_threshold
         done = bool(done)
 
-        if not done \
-            and theta < self.theta_threshold_radians \
-            and theta > -self.theta_threshold_radians:
-                reward = 1.0
-        elif not done:
-            reward = 0.0
+        if not done:
+            reward = 1/(abs(x)+0.3) + 0.5*abs(x)/self.x_threshold
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0
