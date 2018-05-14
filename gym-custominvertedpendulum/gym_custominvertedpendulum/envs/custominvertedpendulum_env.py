@@ -91,6 +91,7 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
+        self.state[2] = angle_normalize(np.random.uniform(low=-np.pi, high=np.pi))
         self.steps_beyond_done = None
         return np.array(self.state)
 
