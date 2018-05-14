@@ -18,17 +18,20 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def __init__(self):
         self.gravity = 9.8
-        self.masscart = 0.5
+        self.masscart = 0.236
         self.masspole = 0.032
-        self.total_mass = (self.masspole + self.masscart)
+        self.massball = 0.01 # golfball weight
+        self.total_mass = (self.masspole + self.masscart + self.massball)
         self.length = 0.362
+        self.radiusball = 0.0427/2 # golfball radius
         self.polemass_length = (self.masspole * self.length)
-        self.force_mag = 2.0
+        self.force_mag = 2.75
         self.tau = 0.02  # seconds between state updates
-        self.inertia_pole = (self.masspole * self.length ** 2) / 3
+        self.inertia_pole = (self.masspole * self.length ** 2) / 3 +  \
+                    self.massball * (self.length + self.radiusball) ** 2
 
         # Angle at which normalization occurs
-        self.theta_threshold_radians = 180 * 2 * math.pi / 360
+        self.theta_threshold_radians = 15 * 2 * math.pi / 360
         self.x_threshold = 1.42/2 - 0.065/2 # half the rail length minus half the width of the cart
 
         # Scoring angle limit set to 2 * theta_threshold_radians
@@ -73,7 +76,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            reward = 1/(abs(theta)+0.3) #+ 0.5*abs(x)/self.x_threshold
+            reward = 2*np.cos(theta/2)
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0
@@ -88,7 +91,6 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(np.random.uniform(low=5*np.pi/6, high=7*np.pi/6))
         self.steps_beyond_done = None
         return np.array(self.state)
 
