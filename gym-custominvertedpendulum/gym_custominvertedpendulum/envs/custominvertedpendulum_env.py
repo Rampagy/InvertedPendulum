@@ -18,7 +18,7 @@ class CustomInvertedPendulumEnv(gym.Env):
 
     def __init__(self):
         self.gravity = 9.8
-        self.masscart = 0.236
+        self.masscart = 0.5
         self.masspole = 0.032
         self.total_mass = (self.masspole + self.masscart)
         self.length = 0.362
@@ -73,7 +73,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            reward = 1/(abs(x)+0.3) + 0.5*abs(x)/self.x_threshold
+            reward = 1/(abs(theta)+0.3) #+ 0.5*abs(x)/self.x_threshold
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0
