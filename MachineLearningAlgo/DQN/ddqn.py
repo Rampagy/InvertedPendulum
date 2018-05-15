@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 2000:
+                if np.mean(scores[-min(10, len(scores)):]) > 2400:
                     sys.exit()
 
         # save the model
