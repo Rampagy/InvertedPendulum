@@ -76,7 +76,7 @@ class CustomInvertedPendulumEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            reward = 2*np.cos(theta/2)
+            reward = 1/(abs(theta/3)+0.3)-0.6 + 1/(abs(2*theta_dot)+1)
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0

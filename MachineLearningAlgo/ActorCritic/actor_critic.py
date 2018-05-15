@@ -22,8 +22,8 @@ class A2CAgent:
 
         # These are hyper parameters for the Policy Gradient
         self.discount_factor = 0.99
-        self.actor_lr = 0.001
-        self.critic_lr = 0.005
+        self.actor_lr = 0.0001
+        self.critic_lr = 0.0005
 
         # create model for policy network
         self.actor = self.build_actor()
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 650:
+                if np.mean(scores[-min(10, len(scores)):]) > 1200:
                     sys.exit()
 
         # save the model
