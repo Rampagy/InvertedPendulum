@@ -1,5 +1,5 @@
 import sys
-import gym
+import gym_custominvertedpendulum as gym
 import pylab
 import random
 import numpy as np
@@ -9,7 +9,7 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras import backend as K
 
-EPISODES = 300
+EPISODES = 1000
 
 
 # this is Double DQN Agent for the Cartpole
@@ -28,7 +28,7 @@ class DoubleDQNAgent:
         self.discount_factor = 0.99
         self.learning_rate = 0.001
         self.epsilon = 1.0
-        self.epsilon_decay = 0.999
+        self.epsilon_decay = 0.9999
         self.epsilon_min = 0.01
         self.batch_size = 64
         self.train_start = 1000
@@ -119,7 +119,7 @@ class DoubleDQNAgent:
 
 if __name__ == "__main__":
     # in case of CartPole-v1, you can play until 500 time step
-    env = gym.make('CartPole-v1')
+    env = gym.make('CustomInvertedPendulum-v0')
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
@@ -131,6 +131,7 @@ if __name__ == "__main__":
     for e in range(EPISODES):
         done = False
         score = 0
+        time = 0
         state = env.reset()
         state = np.reshape(state, [1, state_size])
         # agent.load_model("./save_model/cartpole-master.h5")
@@ -144,7 +145,7 @@ if __name__ == "__main__":
             next_state, reward, done, info = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
             # if an action make the episode end, then gives penalty of -100
-            reward = reward if not done or score == 499 else -100
+            reward = reward if not done or time == 749 else -100
 
             # save the sample <s, a, r, s'> to the replay memory
             agent.replay_memory(state, action, reward, next_state, done)
@@ -152,6 +153,7 @@ if __name__ == "__main__":
             agent.train_replay()
             score += reward
             state = next_state
+            time += 1
 
             if done:
                 env.reset()
@@ -159,19 +161,19 @@ if __name__ == "__main__":
                 agent.update_target_model()
 
                 # every episode, plot the play time
-                score = score if score == 500 else score + 100
+                score = score if time == 750 else score + 100
                 scores.append(score)
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
-                pylab.savefig("./Cartpole_DoubleDQN.png")
+                pylab.savefig("./InvPend_DoubleDQN.png")
                 print("episode: {:3}   score: {:8.6}   memory length: {:4}   epsilon {:.3}"
                             .format(e, score, len(agent.memory), agent.epsilon))
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 490:
+                if np.mean(scores[-min(10, len(scores)):]) > 2000:
                     sys.exit()
 
         # save the model
         if e % 50 == 0:
-            agent.save_model("./Cartpole_DoubleDQN.h5")
+            agent.save_model("./InvPend_DoubleDQN.h5")
