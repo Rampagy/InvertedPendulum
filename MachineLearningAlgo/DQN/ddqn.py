@@ -18,7 +18,7 @@ EPISODES = 1000
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
         # if you want to see Cartpole learning, then change to True
-        self.render = True
+        self.render = False
 
         # get size of state and action
         self.state_size = state_size

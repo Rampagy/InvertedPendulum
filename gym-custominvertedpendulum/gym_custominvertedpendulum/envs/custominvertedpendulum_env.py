@@ -9,7 +9,6 @@ import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
-from random import choices as rand_choices
 
 class CustomInvertedPendulumEnv(gym.Env):
     metadata = {
@@ -77,7 +76,8 @@ class CustomInvertedPendulumEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            reward = 1/(abs(theta/3)+0.3)-0.6 + 1/(abs(2*theta_dot)+1)
+            # max theoretical reward is 750*50
+            reward = -(theta*2)**2 + -0.25*(theta_dot)**2 + 50
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0
@@ -92,8 +92,7 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(self.state[2] + \
-                        rand_choices([0, np.pi], weights=[0.33, 0.67]))
+        self.state[2] = angle_normalize(self.state[2] + np.pi)
         self.steps_beyond_done = None
         return np.array(self.state)
 
