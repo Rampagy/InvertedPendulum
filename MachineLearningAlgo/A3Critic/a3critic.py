@@ -172,7 +172,7 @@ class Agent(threading.Thread):
                     episode += 1
                     print("episode: ", episode, "/ score : ", score)
                     scores.append(score)
-                    self.train_episode(score != 750)
+                    self.train_episode(time != 750)
                     break
 
     # In Policy Gradient, Q function is not available.
