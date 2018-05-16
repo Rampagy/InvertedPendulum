@@ -157,6 +157,7 @@ class Agent(threading.Thread):
         while episode < EPISODES:
             state = env.reset()
             score = 0
+            time = 0
             while True:
                 action = self.get_action(state)
                 next_state, reward, done, _ = env.step(action)
@@ -165,12 +166,13 @@ class Agent(threading.Thread):
                 self.memory(state, action, reward)
 
                 state = next_state
+                time += 1
 
                 if done:
                     episode += 1
                     print("episode: ", episode, "/ score : ", score)
                     scores.append(score)
-                    self.train_episode(score != 500)
+                    self.train_episode(score != 750)
                     break
 
     # In Policy Gradient, Q function is not available.
