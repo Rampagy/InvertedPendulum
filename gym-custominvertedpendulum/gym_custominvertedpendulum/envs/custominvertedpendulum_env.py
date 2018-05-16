@@ -9,7 +9,7 @@ import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
-from random import choice as rand_choice
+from random import choices as rand_choices
 
 class CustomInvertedPendulumEnv(gym.Env):
     metadata = {
@@ -92,7 +92,8 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(self.state[2] + rand_choice([0, np.pi]))
+        self.state[2] = angle_normalize(self.state[2] + \
+                        rand_choices([0, np.pi], weights=[0.33, 0.67]))
         self.steps_beyond_done = None
         return np.array(self.state)
 

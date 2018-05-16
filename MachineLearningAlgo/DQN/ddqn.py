@@ -18,7 +18,7 @@ EPISODES = 1000
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
         # if you want to see Cartpole learning, then change to True
-        self.render = False
+        self.render = True
 
         # get size of state and action
         self.state_size = state_size
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         time = 0
         state = env.reset()
         state = np.reshape(state, [1, state_size])
-        # agent.load_model("./save_model/cartpole-master.h5")
+        # agent.load_model("./InvPend_DoubleDQN.h5")
 
         while not done:
             if agent.render:
