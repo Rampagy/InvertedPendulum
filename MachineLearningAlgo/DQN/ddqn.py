@@ -28,12 +28,12 @@ class DoubleDQNAgent:
         self.discount_factor = 0.99
         self.learning_rate = 0.001
         self.epsilon = 1.0
-        self.epsilon_decay = 0.9999
+        self.epsilon_decay = 0.99995
         self.epsilon_min = 0.01
         self.batch_size = 64
         self.train_start = 1000
         # create replay memory using deque
-        self.memory = deque(maxlen=2000)
+        self.memory = deque(maxlen=3000)
 
         # create main model and target model
         self.model = self._build_model()
@@ -171,9 +171,9 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 2400:
+                if np.mean(scores[-min(10, len(scores)):]) > 2200:
                     sys.exit()
 
         # save the model
-        if e % 50 == 0:
+        if e % 10 == 0:
             agent.save_model("./InvPend_DoubleDQN.h5")

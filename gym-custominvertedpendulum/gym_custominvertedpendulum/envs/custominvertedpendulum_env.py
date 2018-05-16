@@ -9,6 +9,7 @@ import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
+from random import choice as rand_choice
 
 class CustomInvertedPendulumEnv(gym.Env):
     metadata = {
@@ -31,7 +32,7 @@ class CustomInvertedPendulumEnv(gym.Env):
                     self.massball * (self.length + self.radiusball) ** 2
 
         # Angle at which normalization occurs
-        self.theta_threshold_radians = 15 * 2 * math.pi / 360
+        self.theta_threshold_radians = 180 * 2 * math.pi / 360
         self.x_threshold = 1.42/2 - 0.065/2 # half the rail length minus half the width of the cart
 
         # Scoring angle limit set to 2 * theta_threshold_radians
@@ -91,7 +92,7 @@ class CustomInvertedPendulumEnv(gym.Env):
     def reset(self):
         self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         # start pole at bottom (180 degrees or pi radians)
-        self.state[2] = angle_normalize(np.random.uniform(low=-np.pi, high=np.pi))
+        self.state[2] = angle_normalize(self.state[2] + rand_choice([0, np.pi]))
         self.steps_beyond_done = None
         return np.array(self.state)
 
