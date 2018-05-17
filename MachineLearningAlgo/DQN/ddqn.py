@@ -10,6 +10,8 @@ from keras.models import Sequential
 from keras import backend as K
 
 EPISODES = 1000
+TEST = False
+LOAD = False
 
 
 # this is Double DQN Agent for the Cartpole
@@ -18,7 +20,7 @@ EPISODES = 1000
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
         # if you want to see Cartpole learning, then change to True
-        self.render = False
+        self.render = TEST
 
         # get size of state and action
         self.state_size = state_size
@@ -27,7 +29,10 @@ class DoubleDQNAgent:
         # these is hyper parameters for the Double DQN
         self.discount_factor = 0.99
         self.learning_rate = 0.001
-        self.epsilon = 1.0
+        if TEST:
+            self.epsilon = 0.0
+        else:
+            self.epsilon = 1.0
         self.epsilon_decay = 0.99995
         self.epsilon_min = 0.01
         self.batch_size = 64
@@ -47,8 +52,9 @@ class DoubleDQNAgent:
     # state is input and Q Value of each action is output of network
     def _build_model(self):
         model = Sequential()
-        model.add(Dense(24, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dense(24, activation='relu', kernel_initializer='he_uniform'))
+        model.add(Dense(100, input_dim=self.state_size, activation='relu', kernel_initializer='he_uniform'))
+        model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
+        model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
         model.add(Dense(self.action_size, activation='linear', kernel_initializer='he_uniform'))
         model.summary()
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
@@ -134,7 +140,8 @@ if __name__ == "__main__":
         time = 0
         state = env.reset()
         state = np.reshape(state, [1, state_size])
-        # agent.load_model("./InvPend_DoubleDQN.h5")
+        if LOAD:
+            agent.load_model("./InvPend_DoubleDQN.h5")
 
         while not done:
             if agent.render:
