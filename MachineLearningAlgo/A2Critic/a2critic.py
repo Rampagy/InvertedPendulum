@@ -6,7 +6,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-EPISODES = 1000
+EPISODES = 10000
 
 
 # A2C(Advantage Actor-Critic) agent for the Cartpole
@@ -132,7 +132,9 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 28000:
+                if np.mean(scores[-min(10, len(scores)):]) > 30000:
+                    agent.actor.save_weights("./invpend_actor.h5")
+                    agent.critic.save_weights("./invpend_critic.h5")
                     sys.exit()
 
         # save the model
