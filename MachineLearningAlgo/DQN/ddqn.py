@@ -10,8 +10,8 @@ from keras.models import Sequential
 from keras import backend as K
 
 EPISODES = 1000
-TEST = False
-LOAD = False
+TEST = True
+LOAD = True
 
 
 # this is Double DQN Agent for the Cartpole
@@ -20,7 +20,7 @@ LOAD = False
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
         # if you want to see learning, then change to True
-        self.render = False
+        self.render = True
 
         # get size of state and action
         self.state_size = state_size
@@ -154,10 +154,11 @@ if __name__ == "__main__":
             # if an action make the episode end, then gives penalty of -100
             reward = reward if not done or time == 749 else -100
 
-            # save the sample <s, a, r, s'> to the replay memory
-            agent.replay_memory(state, action, reward, next_state, done)
-            # every time step do the training
-            agent.train_replay()
+            if not TEST:
+                # save the sample <s, a, r, s'> to the replay memory
+                agent.replay_memory(state, action, reward, next_state, done)
+                # every time step do the training
+                agent.train_replay()
             score += reward
             state = next_state
             time += 1
