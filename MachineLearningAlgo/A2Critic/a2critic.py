@@ -88,7 +88,7 @@ class A2CAgent:
 
 if __name__ == "__main__":
     # In case of CartPole-v1, maximum length of episode is 500
-    env = gym.make('CustomInvertedPendulum-v0')
+    env = gym.make('DampingPendulum-v0')
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
