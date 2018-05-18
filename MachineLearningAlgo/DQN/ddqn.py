@@ -33,7 +33,7 @@ class DoubleDQNAgent:
             self.epsilon = 0.0
         else:
             self.epsilon = 1.0
-        self.epsilon_decay = 0.999
+        self.epsilon_decay = 0.9995
         self.epsilon_min = 0.01
         self.batch_size = 64
         self.train_start = 1000
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 28000:
+                if np.mean(scores[-min(10, len(scores)):]) > 30000:
                     sys.exit()
 
         # save the model
