@@ -37,7 +37,7 @@ surf = ax.plot_surface(theta, theta_dot, reward, cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
 
 
-ax.set_title('Reward as a function of theta and theta_dot')
+ax.set_title('Reward as a function of theta and theta_dot for flipping up the inverted pendulum')
 ax.set_xlabel('theta, rad')
 ax.set_ylabel('theta_dot, rad/s')
 ax.set_zlabel('reward')

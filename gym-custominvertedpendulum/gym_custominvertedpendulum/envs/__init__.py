@@ -1,1 +1,2 @@
 from gym_custominvertedpendulum.envs.custominvertedpendulum_env import CustomInvertedPendulumEnv
+from gym_custominvertedpendulum.envs.dampingpendulum_env import DampingPendulumEnv

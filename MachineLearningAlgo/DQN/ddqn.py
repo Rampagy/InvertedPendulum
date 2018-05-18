@@ -19,8 +19,8 @@ LOAD = False
 # and replay memory & target q network
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
-        # if you want to see Cartpole learning, then change to True
-        self.render = TEST
+        # if you want to see learning, then change to True
+        self.render = False
 
         # get size of state and action
         self.state_size = state_size
@@ -33,12 +33,12 @@ class DoubleDQNAgent:
             self.epsilon = 0.0
         else:
             self.epsilon = 1.0
-        self.epsilon_decay = 0.99995
+        self.epsilon_decay = 0.999
         self.epsilon_min = 0.01
         self.batch_size = 64
         self.train_start = 1000
         # create replay memory using deque
-        self.memory = deque(maxlen=3000)
+        self.memory = deque(maxlen=2000)
 
         # create main model and target model
         self.model = self._build_model()
@@ -125,7 +125,7 @@ class DoubleDQNAgent:
 
 if __name__ == "__main__":
     # in case of CartPole-v1, you can play until 500 time step
-    env = gym.make('CustomInvertedPendulum-v0')
+    env = gym.make('DampingPendulum-v0')
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
