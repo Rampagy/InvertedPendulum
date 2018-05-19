@@ -77,7 +77,7 @@ class DampingPendulumEnv(gym.Env):
 
         if not done:
             # max theoretical reward is 750*50
-            reward = -((abs(theta)-np.pi)*2)**2 + -0.25*(theta_dot)**2 + 50
+            reward = -((abs(theta)-np.pi)*3)**2 + -0.25*(theta_dot)**2 + 50
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0

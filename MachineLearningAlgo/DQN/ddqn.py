@@ -10,8 +10,8 @@ from keras.models import Sequential
 from keras import backend as K
 
 EPISODES = 1000
-TEST = True
-LOAD = True
+TEST = False
+LOAD = False
 
 
 # this is Double DQN Agent for the Cartpole
@@ -20,7 +20,7 @@ LOAD = True
 class DoubleDQNAgent:
     def __init__(self, state_size, action_size):
         # if you want to see learning, then change to True
-        self.render = True
+        self.render = False
 
         # get size of state and action
         self.state_size = state_size
