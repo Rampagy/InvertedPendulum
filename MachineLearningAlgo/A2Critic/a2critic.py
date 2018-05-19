@@ -1,7 +1,9 @@
 import sys
 import gym_custominvertedpendulum as gym
 import pylab
+import random
 import numpy as np
+from collections import deque
 from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
@@ -23,11 +25,16 @@ class A2CAgent:
         # These are hyper parameters for the Policy Gradient
         self.discount_factor = 0.99
         self.actor_lr = 0.001
-        self.critic_lr = 0.001
+        self.critic_lr = 0.005
 
         # create model for policy network
         self.actor = self.build_actor()
         self.critic = self.build_critic()
+
+        self.batch_size = 64
+        self.train_start = 1000
+        # create replay memory using deque
+        self.memory = deque(maxlen=2000)
 
         if self.load_model:
             self.actor.load_weights("./invpend_actor.h5")
@@ -38,11 +45,11 @@ class A2CAgent:
     def build_actor(self):
         actor = Sequential()
         actor.add(Dense(100, input_dim=self.state_size, activation='relu',
-                        kernel_initializer='he_uniform'))
-        actor.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
-        actor.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
+                        kernel_initializer='glorot_uniform'))
+        actor.add(Dense(100, activation='relu', kernel_initializer='glorot_uniform'))
+        actor.add(Dense(100, activation='relu', kernel_initializer='glorot_uniform'))
         actor.add(Dense(self.action_size, activation='softmax',
-                        kernel_initializer='he_uniform'))
+                        kernel_initializer='glorot_uniform'))
         actor.summary()
         # See note regarding crossentropy in cartpole_reinforce.py
         actor.compile(loss='categorical_crossentropy',
@@ -62,28 +69,41 @@ class A2CAgent:
         critic.compile(loss="mse", optimizer=Adam(lr=self.critic_lr))
         return critic
 
+    # save sample <s,a,r,s'> to the replay memory
+    def replay_memory(self, state, action, reward, next_state, done):
+        self.memory.append((state, action, reward, next_state, done))
+
     # using the output of policy network, pick action stochastically
     def get_action(self, state):
         policy = self.actor.predict(state, batch_size=1).flatten()
         return np.random.choice(self.action_size, 1, p=policy)[0]
 
     # update policy network every episode
-    def train_model(self, state, action, reward, next_state, done):
-        target = np.zeros((1, self.value_size))
-        advantages = np.zeros((1, self.action_size))
+    def train_model(self):
+        if len(self.memory) < self.train_start:
+            return
+        batch_size = min(self.batch_size, len(self.memory))
+        mini_batch = random.sample(self.memory, batch_size)
 
-        value = self.critic.predict(state)[0]
-        next_value = self.critic.predict(next_state)[0]
+        states = np.zeros((batch_size, self.state_size))
+        targets = np.zeros((batch_size, self.value_size))
+        advantages = np.zeros((batch_size, self.action_size))
 
-        if done:
-            advantages[0][action] = reward - value
-            target[0][0] = reward
-        else:
-            advantages[0][action] = reward + self.discount_factor * (next_value) - value
-            target[0][0] = reward + self.discount_factor * next_value
+        for i in range(batch_size):
+            state, action, reward, next_state, done = mini_batch[i]
+            value = self.critic.predict(state)[0]
+            next_value = self.critic.predict(next_state)[0]
 
-        self.actor.fit(state, advantages, epochs=1, verbose=0)
-        self.critic.fit(state, target, epochs=1, verbose=0)
+            states[i] = state
+            if done:
+                advantages[i][action] = reward - value
+                targets[i][0] = reward
+            else:
+                advantages[i][action] = reward + self.discount_factor * (next_value) - value
+                targets[i][0] = reward + self.discount_factor * next_value
+
+        self.actor.fit(states, advantages, epochs=1, verbose=0)
+        self.critic.fit(states, targets, epochs=1, verbose=0)
 
 
 if __name__ == "__main__":
@@ -115,7 +135,8 @@ if __name__ == "__main__":
             # if an action make the episode end, then give penalty of -100
             reward = reward if not done or time == 749 else -100
 
-            agent.train_model(state, action, reward, next_state, done)
+            agent.replay_memory(state, action, reward, next_state, done)
+            agent.train_model()
 
             time += 1
             score += reward
@@ -128,11 +149,12 @@ if __name__ == "__main__":
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
                 pylab.savefig("./invpend_a2c.png")
-                print("episode:", e, "  score:", score)
+                print("episode: {:3}   score: {:8.6}   memory length: {:4}"
+                            .format(e, score, len(agent.memory)))
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 30000:
+                if np.mean(scores[-min(10, len(scores)):]) > 34000:
                     agent.actor.save_weights("./invpend_actor.h5")
                     agent.critic.save_weights("./invpend_critic.h5")
                     sys.exit()
