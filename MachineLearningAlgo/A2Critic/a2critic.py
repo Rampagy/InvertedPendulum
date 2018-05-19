@@ -8,7 +8,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-EPISODES = 10000
+EPISODES = 1000
 
 
 # A2C(Advantage Actor-Critic) agent for the Cartpole
@@ -17,6 +17,7 @@ class A2CAgent:
         # if you want to see Cartpole learning, then change to True
         self.render = False
         self.load_model = False
+        self.test = False
         # get size of state and action
         self.state_size = state_size
         self.action_size = action_size
@@ -135,8 +136,9 @@ if __name__ == "__main__":
             # if an action make the episode end, then give penalty of -100
             reward = reward if not done or time == 749 else -100
 
-            agent.replay_memory(state, action, reward, next_state, done)
-            agent.train_model()
+            if not agent.test:
+                agent.replay_memory(state, action, reward, next_state, done)
+                agent.train_model()
 
             time += 1
             score += reward
@@ -154,12 +156,13 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 34000:
-                    agent.actor.save_weights("./invpend_actor.h5")
-                    agent.critic.save_weights("./invpend_critic.h5")
+                if np.mean(scores[-min(10, len(scores)):]) > 32000:
+                    if not agent.test:
+                        agent.actor.save_weights("./invpend_actor.h5")
+                        agent.critic.save_weights("./invpend_critic.h5")
                     sys.exit()
 
         # save the model
-        if e % 50 == 0:
+        if e % 1 == 0 and not agent.test:
             agent.actor.save_weights("./invpend_actor.h5")
             agent.critic.save_weights("./invpend_critic.h5")

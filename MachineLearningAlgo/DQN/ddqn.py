@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 34000:
+                if np.mean(scores[-min(10, len(scores)):]) > 32000:
                     agent.save_model("./InvPend_DoubleDQN.h5")
                     sys.exit()
 
