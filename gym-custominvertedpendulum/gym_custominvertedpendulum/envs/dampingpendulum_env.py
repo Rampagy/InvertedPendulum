@@ -25,7 +25,7 @@ class DampingPendulumEnv(gym.Env):
         self.length = 0.362
         self.radiusball = 0.0427/2 # golfball radius
         self.polemass_length = (self.masspole * self.length)
-        self.force_mag = 2.75
+        self.force_mag = 2.00
         self.tau = 0.02  # seconds between state updates
         self.inertia_pole = (self.masspole * self.length ** 2) / 3 +  \
                     self.massball * (self.length + self.radiusball) ** 2
@@ -76,8 +76,15 @@ class DampingPendulumEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            # max theoretical reward is 750*50
-            reward = -((abs(theta)-np.pi)*3)**2 + -0.25*(theta_dot)**2 + 50
+            # max theoretical reward is 750*2
+            if abs(theta) > 165*np.pi/180:
+                reward = 1.0
+            elif abs(theta) > 90*np.pi/180:
+                reward = 0.2
+            else:
+                reward = -0.2
+
+            #reward = -np.cos(theta) - (theta_dot/10)**2 + 1
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
             reward = 0.0
