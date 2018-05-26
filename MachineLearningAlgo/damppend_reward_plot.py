@@ -30,7 +30,7 @@ theta_dot_space = 2*theta_dot_plot_lim / len(theta)
 theta_dot = np.arange(-theta_dot_plot_lim, theta_dot_plot_lim, theta_dot_space)
 
 theta, theta_dot = np.meshgrid(theta, theta_dot)
-reward = -((abs(theta)-np.pi)*3)**2 + -0.25*(theta_dot)**2 + 50
+reward = -np.cos(theta) - (theta_dot/10)**2 + 1
 
 # Plot the surface.
 surf = ax.plot_surface(theta, theta_dot, reward, cmap=cm.coolwarm,

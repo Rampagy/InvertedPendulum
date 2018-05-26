@@ -4,7 +4,7 @@ import pylab
 import random
 import numpy as np
 from collections import deque
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from keras.optimizers import Adam
 
@@ -32,7 +32,7 @@ class A2CAgent:
         self.actor = self.build_actor()
         self.critic = self.build_critic()
 
-        self.batch_size = 64
+        self.batch_size = 32
         self.train_start = 1000
         # create replay memory using deque
         self.memory = deque(maxlen=2000)
@@ -45,10 +45,8 @@ class A2CAgent:
     # actor: state is input and probability of each action is output of model
     def build_actor(self):
         actor = Sequential()
-        actor.add(Dense(100, input_dim=self.state_size, activation='relu',
+        actor.add(Dense(50, input_dim=self.state_size, activation='relu',
                         kernel_initializer='glorot_uniform'))
-        actor.add(Dense(100, activation='relu', kernel_initializer='glorot_uniform'))
-        actor.add(Dense(100, activation='relu', kernel_initializer='glorot_uniform'))
         actor.add(Dense(self.action_size, activation='softmax',
                         kernel_initializer='glorot_uniform'))
         actor.summary()
@@ -60,14 +58,13 @@ class A2CAgent:
     # critic: state is input and value of state is output of model
     def build_critic(self):
         critic = Sequential()
-        critic.add(Dense(100, input_dim=self.state_size, activation='relu',
+        critic.add(Dense(50, input_dim=self.state_size, activation='relu',
                          kernel_initializer='he_uniform'))
-        critic.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
-        critic.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
+        critic.add(Dense(50, activation='relu', kernel_initializer='he_uniform'))
         critic.add(Dense(self.value_size, activation='linear',
                          kernel_initializer='he_uniform'))
         critic.summary()
-        critic.compile(loss="mse", optimizer=Adam(lr=self.critic_lr))
+        critic.compile(loss='mse', optimizer=Adam(lr=self.critic_lr))
         return critic
 
     # save sample <s,a,r,s'> to the replay memory
@@ -133,7 +130,7 @@ if __name__ == "__main__":
             action = agent.get_action(state)
             next_state, reward, done, info = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
-            # if an action make the episode end, then give penalty of -100
+            # if an action makes the episode end early, give penalty of -100
             reward = reward if not done or time == 749 else -100
 
             if not agent.test:
@@ -150,19 +147,19 @@ if __name__ == "__main__":
                 scores.append(score)
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
-                pylab.savefig("./invpend_a2c.png")
+                pylab.savefig("./InvPend_a2c.png")
                 print("episode: {:3}   score: {:8.6}   memory length: {:4}"
                             .format(e, score, len(agent.memory)))
 
                 # if the mean of scores of last 10 episode is bigger than 490
                 # stop training
-                if np.mean(scores[-min(10, len(scores)):]) > 32000:
+                if np.mean(scores[-min(10, len(scores)):]) > 615:
                     if not agent.test:
-                        agent.actor.save_weights("./invpend_actor.h5")
-                        agent.critic.save_weights("./invpend_critic.h5")
+                        agent.actor.save_weights("./InvPend_actor.h5")
+                        agent.critic.save_weights("./InvPend_critic.h5")
                     sys.exit()
 
         # save the model
-        if e % 1 == 0 and not agent.test:
-            agent.actor.save_weights("./invpend_actor.h5")
-            agent.critic.save_weights("./invpend_critic.h5")
+        if e % 10 == 0 and not agent.test:
+            agent.actor.save_weights("./InvPend_actor.h5")
+            agent.critic.save_weights("./InvPend_critic.h5")
