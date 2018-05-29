@@ -9,7 +9,7 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 
 EPISODES = 1000
-
+NAME = 'DampingPendulum-v0'
 
 # A2C(Advantage Actor-Critic) agent for the Cartpole
 class A2CAgent:
@@ -38,8 +38,8 @@ class A2CAgent:
         self.memory = deque(maxlen=2000)
 
         if self.load_model:
-            self.actor.load_weights("./invpend_actor.h5")
-            self.critic.load_weights("./invpend_critic.h5")
+            self.actor.load_weights("./" + NAME + "_actor.h5")
+            self.critic.load_weights("./" + NAME + "_critic.h5")
 
     # approximate policy and value using Neural Network
     # actor: state is input and probability of each action is output of model
@@ -106,7 +106,7 @@ class A2CAgent:
 
 if __name__ == "__main__":
     # In case of CartPole-v1, maximum length of episode is 500
-    env = gym.make('DampingPendulum-v0')
+    env = gym.make(NAME)
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 scores.append(score)
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
-                pylab.savefig("./InvPend_a2c.png")
+                pylab.savefig("./"+ NAME + "_a2c.png")
                 print("episode: {:3}   score: {:8.6}   memory length: {:4}"
                             .format(e, score, len(agent.memory)))
 
@@ -155,11 +155,11 @@ if __name__ == "__main__":
                 # stop training
                 if np.mean(scores[-min(10, len(scores)):]) > 615:
                     if not agent.test:
-                        agent.actor.save_weights("./InvPend_actor.h5")
-                        agent.critic.save_weights("./InvPend_critic.h5")
+                        agent.actor.save_weights("./" + NAME + "_actor.h5")
+                        agent.critic.save_weights("./" + NAME + "_critic.h5")
                     sys.exit()
 
         # save the model
         if e % 10 == 0 and not agent.test:
-            agent.actor.save_weights("./InvPend_actor.h5")
-            agent.critic.save_weights("./InvPend_critic.h5")
+            agent.actor.save_weights("./" + NAME + "_actor.h5")
+            agent.critic.save_weights("./" + NAME + "_critic.h5")
